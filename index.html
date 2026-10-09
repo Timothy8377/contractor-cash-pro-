@@ -7,45 +7,31 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}
-header{background:#1a2940;padding:22px;text-align:center}
-h1,h2{color:#22c55e}
-h1{font-size:27px}
+header{text-align:center;background:#1b2c45;padding:25px 12px}
+h1{color:#22c55e;font-size:29px}
+h2{color:#4ade80}
 header p{color:#cbd5e1}
-main{max-width:750px;margin:auto;padding:15px}
-.card{background:#1e293b;padding:18px;border-radius:12px;margin-bottom:15px}
-input,select,textarea{
-width:100%;padding:12px;margin:7px 0;
-background:#0f172a;color:white;
-border:1px solid #64748b;border-radius:7px;
-font-size:16px
-}
-textarea{min-height:85px}
-button{
-background:#22c55e;color:#052e16;
-border:0;border-radius:8px;padding:13px;
-font-weight:bold;font-size:15px;
-margin:5px 0;cursor:pointer
-}
-.full{width:100%}
-.secondary{background:#475569;color:white}
-nav{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;padding:12px}
-nav button{font-size:13px}
+nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:20px 8px}
+button{background:#22c55e;color:#092012;border:0;border-radius:9px;padding:13px;font-size:15px;font-weight:bold;cursor:pointer}
+nav button{flex:1 1 29%;max-width:180px}
+main{max-width:850px;margin:auto;padding:12px}
 section{display:none}
 section.active{display:block}
-label{display:block;margin-top:10px}
-.total{font-size:25px;color:#4ade80;font-weight:bold}
-.record{padding:12px;border-bottom:1px solid #475569}
-canvas{background:white;touch-action:none;width:100%;height:160px;border-radius:8px}
-img.logo{max-width:140px;max-height:100px}
-footer{text-align:center;padding:25px;color:#94a3b8}
+.card{background:#1e293b;border-radius:15px;padding:20px;margin-bottom:20px}
+input,select,textarea{width:100%;padding:13px;margin:7px 0 14px;background:#0f172a;color:white;border:1px solid #64748b;border-radius:8px;font-size:16px}
+textarea{min-height:90px}
+label{display:block;margin-top:8px}
+.full{width:100%;margin:8px 0}
+.record{background:#0f172a;padding:15px;border-radius:9px;margin:12px 0;overflow-wrap:anywhere}
+.small{font-size:13px;color:#cbd5e1}
+.danger{background:#ef4444;color:white}
+.secondary{background:#475569;color:white}
 @media print{
-header,nav,button,.no-print,footer{display:none!important}
-body,main,.card{background:white;color:black}
+header,nav,button,.no-print{display:none!important}
+body{background:white;color:black}
 section{display:none!important}
-section.active{display:block!important}
-input,textarea,select{background:white;color:black;border:0}
-h1,h2,.total{color:black}
-canvas{border:1px solid #ccc}
+section.printing{display:block!important}
+.card,.record{background:white;color:black;border:1px solid #aaa}
 }
 </style>
 </head>
@@ -57,7 +43,7 @@ canvas{border:1px solid #ccc}
 <p>Run Your Business. Build Your Profit.</p>
 </header>
 
-<nav class="no-print">
+<nav>
 <button onclick="show('dashboard')">Dashboard</button>
 <button onclick="show('estimates')">Estimates</button>
 <button onclick="show('contracts')">Contracts</button>
@@ -75,27 +61,562 @@ canvas{border:1px solid #ccc}
 <input id="business" placeholder="Company name">
 <label>Business Phone</label>
 <input id="phone" placeholder="Phone number">
-<label>Company Logo</label>
-<input type="file" accept="image/*" id="logoInput">
-<img id="logoPreview" class="logo">
+<label>Business Email</label>
+<input id="email" placeholder="Email address">
 <button class="full" onclick="saveBusiness()">Save Business Information</button>
 </div>
 
 <div class="card">
 <h2>Business Overview</h2>
-<p>Saved Jobs: <strong id="jobCount">0</strong></p>
-<p>Total Estimated / Invoiced: <strong id="revenue">$0.00</strong></p>
-<p>Paid Invoices: <strong id="paid">$0.00</strong></p>
-<p>Unpaid Invoices: <strong id="unpaid">$0.00</strong></p>
-<p>Estimated Job Profit: <strong id="profit">$0.00</strong></p>
+<p>Customers: <strong id="customerCount">0</strong></p>
+<p>Estimates / Invoices: <strong id="invoiceCount">0</strong></p>
+<p>Contracts: <strong id="contractCount">0</strong></p>
+<p>Industrial Jobs: <strong id="jobCount">0</strong></p>
+<p>Total Invoice Value: <strong id="invoiceTotal">$0.00</strong></p>
+<p>Paid Invoices: <strong id="paidTotal">$0.00</strong></p>
+<p>Unpaid Invoices: <strong id="unpaidTotal">$0.00</strong></p>
+</div>
+
+<div class="card">
+<h2>Backup Your Business</h2>
+<button class="full" onclick="backup()">Download Backup</button>
+<label>Restore Backup</label>
+<input type="file" id="restoreFile" accept=".json" onchange="restore(event)">
+<p class="small">Your information is stored in this browser. Back up regularly. Clearing browser data can erase your records.</p>
 </div>
 </section>
 
 <section id="estimates">
 <div class="card">
 <h2>Estimates & Invoices</h2>
+<label>Document Type</label>
 <select id="docType">
 <option>Estimate</option>
 <option>Invoice</option>
 </select>
-<input id="
+<label>Customer Name</label>
+<input id="docCustomer">
+<label>Job Address</label>
+<input id="docAddress">
+<label>Job Description</label>
+<textarea id="docDescription"></textarea>
+<label>Labor Cost ($)</label>
+<input type="number" id="labor" value="0">
+<label>Material Cost ($)</label>
+<input type="number" id="materials" value="0">
+<label>Equipment Cost ($)</label>
+<input type="number" id="equipment" value="0">
+<label>Other Costs ($)</label>
+<input type="number" id="other" value="0">
+<label>Markup (%)</label>
+<input type="number" id="markup" value="25">
+<label>Payment Status</label>
+<select id="payment">
+<option>Unpaid</option>
+<option>Paid</option>
+</select>
+<button class="full" onclick="saveDocument()">Calculate & Save</button>
+</div>
+<div class="card">
+<h2>Saved Estimates & Invoices</h2>
+<div id="documentsList"></div>
+</div>
+</section>
+
+<section id="contracts">
+<div class="card">
+<h2>Contract Setup</h2>
+<label>Contract Type</label>
+<select id="contractType">
+<option>General Service Agreement</option>
+<option>Construction Contract</option>
+<option>Industrial Cleaning Contract</option>
+<option>Wastewater Treatment Contract</option>
+<option>Pipeline Cleaning Contract</option>
+<option>Equipment Rental Contract</option>
+<option>Subcontractor Agreement</option>
+<option>Maintenance Agreement</option>
+<option>Custom Contract</option>
+</select>
+<label>Customer / Company</label>
+<input id="contractCustomer">
+<label>Customer Address</label>
+<input id="contractAddress">
+<label>Project Location</label>
+<input id="contractLocation">
+<label>Scope of Work</label>
+<textarea id="scope"></textarea>
+<label>Contract Amount ($)</label>
+<input type="number" id="contractAmount">
+<label>Deposit Required ($)</label>
+<input type="number" id="deposit">
+<label>Payment Terms</label>
+<textarea id="terms" placeholder="Example: 30% deposit, balance due within 15 days"></textarea>
+<label>Start Date</label>
+<input type="date" id="startDate">
+<label>Completion Date</label>
+<input type="date" id="endDate">
+<label>Additional Conditions</label>
+<textarea id="conditions"></textarea>
+<button class="full" onclick="saveContract()">Create Contract</button>
+</div>
+<div class="card">
+<h2>Saved Contracts</h2>
+<div id="contractsList"></div>
+</div>
+</section>
+
+<section id="timesheets">
+<div class="card">
+<h2>Employee Timesheets</h2>
+<label>Employee Name</label>
+<input id="employee">
+<label>Week Starting</label>
+<input type="date" id="week">
+<label>Monday Hours</label>
+<input type="number" id="mon" value="0">
+<label>Tuesday Hours</label>
+<input type="number" id="tue" value="0">
+<label>Wednesday Hours</label>
+<input type="number" id="wed" value="0">
+<label>Thursday Hours</label>
+<input type="number" id="thu" value="0">
+<label>Friday Hours</label>
+<input type="number" id="fri" value="0">
+<label>Saturday Hours</label>
+<input type="number" id="sat" value="0">
+<label>Sunday Hours</label>
+<input type="number" id="sun" value="0">
+<label>Hourly Rate ($)</label>
+<input type="number" id="rate" value="0">
+<button class="full" onclick="saveTimesheet()">Calculate & Save Timesheet</button>
+</div>
+<div class="card">
+<h2>Saved Timesheets</h2>
+<div id="timesheetsList"></div>
+</div>
+</section>
+
+<section id="customers">
+<div class="card">
+<h2>Customer Management</h2>
+<label>Customer Name</label>
+<input id="customerName">
+<label>Phone</label>
+<input id="customerPhone">
+<label>Email</label>
+<input id="customerEmail">
+<label>Address</label>
+<input id="customerAddress">
+<label>Notes</label>
+<textarea id="customerNotes"></textarea>
+<button class="full" onclick="saveCustomer()">Save Customer</button>
+</div>
+<div class="card">
+<h2>Customer Records</h2>
+<div id="customersList"></div>
+</div>
+</section>
+
+<section id="industrial">
+<div class="card">
+<h2>Industrial Job Tracking</h2>
+<label>Customer / Facility</label>
+<input id="facility">
+<label>Service Type</label>
+<select id="service">
+<option>Wastewater Treatment Plant Cleaning</option>
+<option>Lift Station Cleaning</option>
+<option>Grit Removal</option>
+<option>Pipeline Cleaning</option>
+<option>Sewer Cleaning</option>
+<option>Vacuum Services</option>
+<option>Point Repair</option>
+<option>Pipe Replacement</option>
+<option>Other Industrial Service</option>
+</select>
+<label>Project Location</label>
+<input id="jobLocation">
+<label>Pipe Diameter / Equipment</label>
+<input id="pipeSize">
+<label>Job Description</label>
+<textarea id="jobNotes"></textarea>
+<label>Job Revenue ($)</label>
+<input type="number" id="revenue" value="0">
+<label>Labor Cost ($)</label>
+<input type="number" id="jobLabor" value="0">
+<label>Equipment Cost ($)</label>
+<input type="number" id="jobEquipment" value="0">
+<label>Material Cost ($)</label>
+<input type="number" id="jobMaterials" value="0">
+<label>Other Expenses ($)</label>
+<input type="number" id="jobOther" value="0">
+<label>Job Status</label>
+<select id="jobStatus">
+<option>Pending</option>
+<option>In Progress</option>
+<option>Completed</option>
+</select>
+<button class="full" onclick="saveJob()">Calculate Profit & Save</button>
+</div>
+<div class="card">
+<h2>Saved Industrial Jobs</h2>
+<div id="jobsList"></div>
+</div>
+</section>
+
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const value=id=>$(id).value.trim();
+const num=id=>Number($(id).value)||0;
+const money=n=>Number(n||0).toLocaleString("en-US",{
+style:"currency",currency:"USD"
+});
+const escapeHTML=s=>String(s??"").replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",
+'"':"&quot;","'":"&#39;"
+})[c]);
+const safe=s=>escapeHTML(s).replace(/\n/g,"<br>");
+const KEY="contractorCashProV2";
+const empty=()=>({
+business:{},documents:[],contracts:[],
+timesheets:[],customers:[],jobs:[]
+});
+let data;
+try{
+data={...empty(),...JSON.parse(localStorage.getItem(KEY)||"{}")};
+}catch(e){data=empty()}
+for(const k of ["documents","contracts","timesheets","customers","jobs"]){
+if(!Array.isArray(data[k]))data[k]=[];
+}
+function persist(){
+try{
+localStorage.setItem(KEY,JSON.stringify(data));
+render();
+}catch(e){alert("Unable to save. Browser storage may be full.");}
+}
+function show(id){
+document.querySelectorAll("main section").forEach(s=>{
+s.classList.toggle("active",s.id===id);
+});
+window.scrollTo(0,0);
+}
+function record(type,content,index){
+return `<div class="record">${content}
+<br><button class="danger" onclick="removeRecord('${type}',${index})">Delete</button>
+</div>`;
+}
+function removeRecord(type,index){
+if(confirm("Delete this record?")){
+data[type].splice(index,1);
+persist();
+}
+}
+function saveBusiness(){
+data.business={
+name:value("business"),phone:value("phone"),email:value("email")
+};
+persist();
+alert("Business information saved!");
+}
+function saveDocument(){
+let customer=value("docCustomer");
+if(!customer)return alert("Enter a customer name.");
+let cost=num("labor")+num("materials")+num("equipment")+num("other");
+let total=cost*(1+num("markup")/100);
+data.documents.push({
+type:value("docType"),customer,
+address:value("docAddress"),
+description:value("docDescription"),
+cost,total,status:value("payment"),
+date:new Date().toLocaleDateString()
+});
+persist();
+alert("Document saved! Total: "+money(total));
+}
+function saveContract(){
+if(!value("contractCustomer")||!value("scope"))
+return alert("Enter the customer and scope of work.");
+data.contracts.push({
+type:value("contractType"),
+customer:value("contractCustomer"),
+address:value("contractAddress"),
+location:value("contractLocation"),
+scope:value("scope"),
+amount:num("contractAmount"),
+deposit:num("deposit"),
+terms:value("terms"),
+start:value("startDate"),
+end:value("endDate"),
+conditions:value("conditions"),
+date:new Date().toLocaleDateString()
+});
+persist();
+alert("Contract saved!");
+}
+function saveTimesheet(){
+if(!value("employee"))return alert("Enter employee name.");
+let days=["mon","tue","wed","thu","fri","sat","sun"];
+let hours=days.reduce((sum,id)=>sum+num(id),0);
+let rate=num("rate");
+data.timesheets.push({
+employee:value("employee"),
+week:value("week"),hours,rate,
+pay:hours*rate
+});
+persist();
+alert("Timesheet saved!");
+}
+function saveCustomer(){
+if(!value("customerName"))return alert("Enter customer name.");
+data.customers.push({
+name:value("customerName"),
+phone:value("customerPhone"),
+email:value("customerEmail"),
+address:value("customerAddress"),
+notes:value("customerNotes")
+});
+persist();
+alert("Customer saved!");
+}
+function saveJob(){
+if(!value("facility"))return alert("Enter facility or customer.");
+let revenue=num("revenue");
+let costs=num("jobLabor")+num("jobEquipment")+
+num("jobMaterials")+num("jobOther");
+data.jobs.push({
+facility:value("facility"),
+service:value("service"),
+location:value("jobLocation"),
+pipe:value("pipeSize"),
+notes:value("jobNotes"),
+revenue,costs,profit:revenue-costs,
+status:value("jobStatus")
+});
+persist();
+alert("Job saved! Estimated profit: "+money(revenue-costs));
+}
+function render(){
+$("business").value=data.business.name||"";
+$("phone").value=data.business.phone||"";
+$("email").value=data.business.email||"";
+
+$("customerCount").textContent=data.customers.length;
+$("invoiceCount").textContent=data.documents.length;
+$("contractCount").textContent=data.contracts.length;
+$("jobCount").textContent=data.jobs.length;
+
+let invoices=data.documents.filter(d=>d.type==="Invoice");
+let total=invoices.reduce((s,d)=>s+d.total,0);
+let paid=invoices.filter(d=>d.status==="Paid")
+.reduce((s,d)=>s+d.total,0);
+$("invoiceTotal").textContent=money(total);
+$("paidTotal").textContent=money(paid);
+$("unpaidTotal").textContent=money(total-paid);
+
+$("documentsList").innerHTML=data.documents.map((d,i)=>
+record("documents",`
+<h3>${safe(d.type)} — ${safe(d.customer)}</h3>
+<p>Date: ${safe(d.date)}</p>
+<p>Address: ${safe(d.address)}</p>
+<p>${safe(d.description)}</p>
+<p>Cost: ${money(d.cost)}</p>
+<p><strong>Total: ${money(d.total)}</strong></p>
+<p>Status: ${safe(d.status)}</p>
+<button onclick="printDocument(${i})">Print / Save PDF</button>
+${d.type==="Invoice"?
+`<button onclick="togglePaid(${i})">Mark ${d.status==="Paid"?"Unpaid":"Paid"}</button>`:""}
+`,i)).join("");
+
+$("contractsList").innerHTML=data.contracts.map((c,i)=>
+record("contracts",`
+<h3>${safe(c.type)}</h3>
+<p>Customer: ${safe(c.customer)}</p>
+<p>Location: ${safe(c.location)}</p>
+<p>Scope: ${safe(c.scope)}</p>
+<p>Amount: ${money(c.amount)}</p>
+<p>Deposit: ${money(c.deposit)}</p>
+<p>Start: ${safe(c.start)} | End: ${safe(c.end)}</p>
+<button onclick="printContract(${i})">Print Contract / Save PDF</button>
+`,i)).join("");
+
+$("timesheetsList").innerHTML=data.timesheets.map((t,i)=>
+record("timesheets",`
+<h3>${safe(t.employee)}</h3>
+<p>Week: ${safe(t.week)}</p>
+<p>Total Hours: ${t.hours}</p>
+<p>Hourly Rate: ${money(t.rate)}</p>
+<p>Gross Pay Estimate: ${money(t.pay)}</p>
+`,i)).join("");
+
+$("customersList").innerHTML=data.customers.map((c,i)=>
+record("customers",`
+<h3>${safe(c.name)}</h3>
+<p>${safe(c.phone)}</p>
+<p>${safe(c.email)}</p>
+<p>${safe(c.address)}</p>
+<p>${safe(c.notes)}</p>
+`,i)).join("");
+
+$("jobsList").innerHTML=data.jobs.map((j,i)=>
+record("jobs",`
+<h3>${safe(j.facility)}</h3>
+<p>Service: ${safe(j.service)}</p>
+<p>Location: ${safe(j.location)}</p>
+<p>Pipe / Equipment: ${safe(j.pipe)}</p>
+<p>${safe(j.notes)}</p>
+<p>Revenue: ${money(j.revenue)}</p>
+<p>Costs: ${money(j.costs)}</p>
+<p><strong>Estimated Profit: ${money(j.profit)}</strong></p>
+<p>Status: ${safe(j.status)}</p>
+`,i)).join("");
+}
+function togglePaid(i){
+let d=data.documents[i];
+d.status=d.status==="Paid"?"Unpaid":"Paid";
+persist();
+}
+function printHTML(title,html){
+let w=window.open("","_blank");
+if(!w){
+  alert("Please allow pop-ups to print.");
+  return;
+}
+
+w.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${title}</title>
+<style>
+body{
+  font-family:Arial,sans-serif;
+  padding:30px;
+  line-height:1.6;
+  color:#111;
+}
+h1{color:#166534}
+h2{border-bottom:2px solid #ddd;padding-bottom:10px}
+p{white-space:pre-wrap}
+.signature{margin-top:55px}
+</style>
+</head>
+<body>
+<h1>Contractor Cash Pro</h1>
+<h2>${title}</h2>
+${html}
+<div class="signature">
+<p>Customer Signature: __________________________</p>
+<p>Date: __________________</p>
+<p>Contractor Signature: _________________________</p>
+<p>Date: __________________</p>
+</div>
+</body>
+</html>
+`);
+
+w.document.close();
+w.onload=function(){
+  w.print();
+};
+}
+
+function backupData(){
+  const blob=new Blob(
+    [JSON.stringify(data,null,2)],
+    {type:"application/json"}
+  );
+
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="contractor-cash-pro-backup.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function restoreData(event){
+  const file=event.target.files[0];
+  if(!file)return;
+
+  const reader=new FileReader();
+
+  reader.onload=function(){
+    try{
+      const restored=JSON.parse(reader.result);
+
+      if(!restored || typeof restored!=="object"){
+        throw new Error("Invalid backup");
+      }
+
+      if(confirm("Replace current data with backup?")){
+        data=restored;
+        persist();
+        location.reload();
+      }
+    }catch(error){
+      alert("Could not restore backup file.");
+    }
+  };
+
+  reader.readAsText(file);
+}
+
+function exportCSV(){
+  let rows=[
+    ["Type","Customer","Description","Amount","Status"]
+  ];
+
+  if(Array.isArray(data.documents)){
+    data.documents.forEach(d=>{
+      rows.push([
+        d.type||"",
+        d.customer||"",
+        d.description||"",
+        d.amount||0,
+        d.status||""
+      ]);
+    });
+  }
+
+  const csv=rows.map(row=>
+    row.map(value=>
+      '"'+String(value).replace(/"/g,'""')+'"'
+    ).join(",")
+  ).join("\n");
+
+  const blob=new Blob([csv],{
+    type:"text/csv;charset=utf-8;"
+  });
+
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="contractor-cash-pro-records.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function clearAllData(){
+  if(!confirm("WARNING: Delete all saved business records?")){
+    return;
+  }
+
+  if(!confirm("This cannot be undone. Continue?")){
+    return;
+  }
+
+  localStorage.removeItem("contractorCashProV3");
+  location.reload();
+}
+
+</script>
+</body>
+</html>
