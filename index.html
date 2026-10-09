@@ -2,38 +2,50 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Contractor Cash Pro</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}
-header{background:#17243a;padding:22px;text-align:center}
-h1{color:#22c55e;margin:0}
+header{background:#1a2940;padding:22px;text-align:center}
+h1,h2{color:#22c55e}
+h1{font-size:27px}
 header p{color:#cbd5e1}
-main{max-width:650px;margin:auto;padding:16px}
-.card{background:#1e293b;padding:20px;border-radius:14px;margin-bottom:18px}
-h2{color:#4ade80;font-size:21px}
+main{max-width:750px;margin:auto;padding:15px}
+.card{background:#1e293b;padding:18px;border-radius:12px;margin-bottom:15px}
 input,select,textarea{
-width:100%;padding:13px;margin:7px 0;
-border:1px solid #475569;border-radius:8px;
-background:#0f172a;color:white;font-size:16px
+width:100%;padding:12px;margin:7px 0;
+background:#0f172a;color:white;
+border:1px solid #64748b;border-radius:7px;
+font-size:16px
 }
+textarea{min-height:85px}
 button{
-background:#22c55e;color:#052e16;border:0;
-padding:14px;border-radius:9px;font-weight:bold;
-font-size:16px;margin:5px 0;width:100%;cursor:pointer
+background:#22c55e;color:#052e16;
+border:0;border-radius:8px;padding:13px;
+font-weight:bold;font-size:15px;
+margin:5px 0;cursor:pointer
 }
-.secondary{background:#334155;color:white}
-.danger{background:#dc2626;color:white}
+.full{width:100%}
+.secondary{background:#475569;color:white}
+nav{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;padding:12px}
+nav button{font-size:13px}
+section{display:none}
+section.active{display:block}
+label{display:block;margin-top:10px}
 .total{font-size:25px;color:#4ade80;font-weight:bold}
-.job{padding:12px;border-bottom:1px solid #475569}
-small{color:#cbd5e1}
+.record{padding:12px;border-bottom:1px solid #475569}
+canvas{background:white;touch-action:none;width:100%;height:160px;border-radius:8px}
+img.logo{max-width:140px;max-height:100px}
+footer{text-align:center;padding:25px;color:#94a3b8}
 @media print{
-body{background:white;color:black}
-header,.no-print,#jobsCard{display:none!important}
-.card{background:white;color:black;border:0}
-h2,.total{color:black}
-input,textarea,select{color:black;background:white;border:0}
+header,nav,button,.no-print,footer{display:none!important}
+body,main,.card{background:white;color:black}
+section{display:none!important}
+section.active{display:block!important}
+input,textarea,select{background:white;color:black;border:0}
+h1,h2,.total{color:black}
+canvas{border:1px solid #ccc}
 }
 </style>
 </head>
@@ -41,187 +53,49 @@ input,textarea,select{color:black;background:white;border:0}
 
 <header>
 <h1>💰 Contractor Cash Pro</h1>
-<p>Estimates • Invoices • Job Tracking</p>
+<p>Created by Timothy Polston</p>
+<p>Run Your Business. Build Your Profit.</p>
 </header>
+
+<nav class="no-print">
+<button onclick="show('dashboard')">Dashboard</button>
+<button onclick="show('estimates')">Estimates</button>
+<button onclick="show('contracts')">Contracts</button>
+<button onclick="show('timesheets')">Timesheets</button>
+<button onclick="show('customers')">Customers</button>
+<button onclick="show('industrial')">Industrial</button>
+</nav>
 
 <main>
 
+<section id="dashboard" class="active">
 <div class="card">
-<h2>Business Information</h2>
-<input id="business" placeholder="Your Business Name">
-<input id="phone" placeholder="Business Phone">
+<h2>Business Dashboard</h2>
+<label>Business Name</label>
+<input id="business" placeholder="Company name">
+<label>Business Phone</label>
+<input id="phone" placeholder="Phone number">
+<label>Company Logo</label>
+<input type="file" accept="image/*" id="logoInput">
+<img id="logoPreview" class="logo">
+<button class="full" onclick="saveBusiness()">Save Business Information</button>
 </div>
 
 <div class="card">
-<h2>Customer & Job</h2>
-<input id="customer" placeholder="Customer Name">
-<input id="address" placeholder="Job Address">
-<input id="description" placeholder="Job Description">
-<select id="type">
+<h2>Business Overview</h2>
+<p>Saved Jobs: <strong id="jobCount">0</strong></p>
+<p>Total Estimated / Invoiced: <strong id="revenue">$0.00</strong></p>
+<p>Paid Invoices: <strong id="paid">$0.00</strong></p>
+<p>Unpaid Invoices: <strong id="unpaid">$0.00</strong></p>
+<p>Estimated Job Profit: <strong id="profit">$0.00</strong></p>
+</div>
+</section>
+
+<section id="estimates">
+<div class="card">
+<h2>Estimates & Invoices</h2>
+<select id="docType">
 <option>Estimate</option>
 <option>Invoice</option>
 </select>
-</div>
-
-<div class="card">
-<h2>Job Costs</h2>
-<label>Labor Hours</label>
-<input id="hours" type="number" min="0" step="0.5" value="0">
-<label>Hourly Labor Rate ($)</label>
-<input id="rate" type="number" min="0" value="75">
-<label>Material Costs ($)</label>
-<input id="materials" type="number" min="0" value="0">
-<label>Other Costs ($)</label>
-<input id="other" type="number" min="0" value="0">
-<label>Markup (%)</label>
-<input id="markup" type="number" min="0" value="20">
-<label>Tax (%)</label>
-<input id="tax" type="number" min="0" value="0">
-
-<h2>Customer Total</h2>
-<div class="total" id="total">$0.00</div>
-
-<button class="no-print" onclick="calculate()">Calculate Total</button>
-<button class="no-print" onclick="saveJob()">Save Job</button>
-<button class="no-print secondary" onclick="window.print()">Print / Save PDF</button>
-</div>
-
-<div class="card no-print" id="jobsCard">
-<h2>Saved Jobs</h2>
-<div id="jobs"></div>
-</div>
-
-</main>
-
-<script>
-const fields=[
-'business','phone','customer','address',
-'description','type','hours','rate',
-'materials','other','markup','tax'
-];
-
-function money(n){
-return '$'+n.toLocaleString('en-US',{
-minimumFractionDigits:2,
-maximumFractionDigits:2
-});
-}
-
-function num(id){
-return Math.max(0,Number(document.getElementById(id).value)||0);
-}
-
-function calculate(){
-const labor=num('hours')*num('rate');
-const costs=labor+num('materials')+num('other');
-const subtotal=costs*(1+num('markup')/100);
-const total=subtotal*(1+num('tax')/100);
-document.getElementById('total').textContent=money(total);
-return total;
-}
-
-function getJobs(){
-try{
-return JSON.parse(localStorage.getItem('ccp_jobs'))||[];
-}catch(e){return [];}
-}
-
-function saveJob(){
-const customer=document.getElementById('customer').value.trim();
-if(!customer){
-alert('Enter a customer name first.');
-return;
-}
-const data={};
-fields.forEach(id=>{
-data[id]=document.getElementById(id).value;
-});
-data.id=Date.now();
-data.total=calculate();
-data.status='Unpaid';
-data.date=new Date().toLocaleDateString();
-
-const jobs=getJobs();
-jobs.unshift(data);
-try{
-localStorage.setItem('ccp_jobs',JSON.stringify(jobs));
-alert('Job saved successfully!');
-renderJobs();
-}catch(e){
-alert('Could not save. Check browser storage.');
-}
-}
-
-function loadJob(id){
-const job=getJobs().find(j=>j.id===id);
-if(!job)return;
-fields.forEach(field=>{
-document.getElementById(field).value=job[field]||'';
-});
-calculate();
-window.scrollTo(0,0);
-}
-
-function togglePaid(id){
-const jobs=getJobs();
-const job=jobs.find(j=>j.id===id);
-if(!job)return;
-job.status=job.status==='Paid'?'Unpaid':'Paid';
-localStorage.setItem('ccp_jobs',JSON.stringify(jobs));
-renderJobs();
-}
-
-function deleteJob(id){
-if(!confirm('Delete this saved job?'))return;
-const jobs=getJobs().filter(j=>j.id!==id);
-localStorage.setItem('ccp_jobs',JSON.stringify(jobs));
-renderJobs();
-}
-
-function renderJobs(){
-const box=document.getElementById('jobs');
-box.innerHTML='';
-const jobs=getJobs();
-if(!jobs.length){
-box.textContent='No saved jobs yet.';
-return;
-}
-jobs.forEach(job=>{
-const div=document.createElement('div');
-div.className='job';
-
-const title=document.createElement('strong');
-title.textContent=job.customer+' — '+money(job.total);
-div.appendChild(title);
-
-const details=document.createElement('p');
-details.textContent=job.type+' | '+job.date+' | '+job.status;
-div.appendChild(details);
-
-[
-['Open Job',()=>loadJob(job.id)],
-[job.status==='Paid'?'Mark Unpaid':'Mark Paid',
-()=>togglePaid(job.id)],
-['Delete',()=>deleteJob(job.id)]
-].forEach(([label,action])=>{
-const btn=document.createElement('button');
-btn.textContent=label;
-btn.className=label==='Delete'?'danger':'secondary';
-btn.onclick=action;
-div.appendChild(btn);
-});
-
-box.appendChild(div);
-});
-}
-
-fields.forEach(id=>{
-document.getElementById(id).addEventListener('input',calculate);
-});
-
-calculate();
-renderJobs();
-</script>
-
-</body>
-</html>
+<input id="
